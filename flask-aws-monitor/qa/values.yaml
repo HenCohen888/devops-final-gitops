@@ -1,0 +1,18 @@
+replicaCount: 1
+
+image:
+  repository: hencohen888/flask-aws-monitor
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5001
+  nodePort: 30082
+
+awsCredentials:
+  secretName: aws-credentials
+  mountPath: /root/.aws
+
+resources: {}

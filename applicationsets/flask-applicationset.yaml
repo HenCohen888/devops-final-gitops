@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+
+metadata:
+  name: flask-aws-monitor
+  namespace: argocd
+
+spec:
+  generators:
+    - list:
+        elements:
+          - env: dev
+            namespace: flask-dev
+            valuesFile: flask-aws-monitor/dev/values.yaml
+          - env: qa
+            namespace: flask-qa
+            valuesFile: flask-aws-monitor/qa/values.yaml
+          - env: prd
+            namespace: flask-prd
+            valuesFile: flask-aws-monitor/prd/values.yaml
+
+  template:
+    metadata:
+      name: flask-aws-monitor-{{env}}
+
+    spec:
+      project: default
+
+      sources:
+        - repoURL: https://github.com/HenCohen888/devops-final-helm.git
+          targetRevision: HEAD
+          path: flask-aws-monitor
+          helm:
+            valueFiles:
+              - $values/{{valuesFile}}
+
+        - repoURL: https://github.com/HenCohen888/devops-final-gitops.git
+          targetRevision: HEAD
+          ref: values
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
